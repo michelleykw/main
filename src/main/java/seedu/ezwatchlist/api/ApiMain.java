@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import info.movito.themoviedbapi.*;
+import info.movito.themoviedbapi.model.Artwork;
 import info.movito.themoviedbapi.model.Credits;
 import info.movito.themoviedbapi.model.Genre;
 import info.movito.themoviedbapi.model.MovieDb;
@@ -13,6 +14,7 @@ import info.movito.themoviedbapi.model.core.MovieResultsPage;
 import info.movito.themoviedbapi.model.people.Person;
 import info.movito.themoviedbapi.model.people.PersonCast;
 import info.movito.themoviedbapi.model.people.PersonCredits;
+import info.movito.themoviedbapi.model.people.PersonPeople;
 import info.movito.themoviedbapi.model.tv.TvEpisode;
 import info.movito.themoviedbapi.model.tv.TvSeason;
 import info.movito.themoviedbapi.model.tv.TvSeries;
@@ -31,6 +33,8 @@ import seedu.ezwatchlist.model.show.Poster;
 import seedu.ezwatchlist.model.show.RunningTime;
 import seedu.ezwatchlist.model.show.Show;
 import seedu.ezwatchlist.model.show.TvShow;
+
+import javax.imageio.plugins.jpeg.JPEGImageReadParam;
 
 /**
  * Main class for the API to connect to the server
@@ -239,6 +243,18 @@ public class ApiMain implements ApiInterface {
 
         int averageRunTime = Math.round(totalRuntime / noOfEpisodes);
         return averageRunTime;
+    }
+
+    public List<Movie> getMovieByActor(Actor actor) throws OnlineConnectionException {
+        ArrayList<Movie> movies = new ArrayList<>();
+        String actorName = actor.getActorName();
+        try {
+            TmdbMovies apiCallMovies = apiCall.getMovies();
+            // apiCallMovies.getCredits() //get cast
+            return movies;
+        } catch (MovieDbException e) {
+            return movies;
+        }
     }
 
     private Set<Actor> getActors(List<PersonCast> cast) {
