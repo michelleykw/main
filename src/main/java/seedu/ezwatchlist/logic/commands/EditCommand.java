@@ -113,8 +113,8 @@ public class EditCommand extends Command {
             return editedShow;
         } else { //showToEdit.type.equals("Tv show")
             TvShow editedShow = new TvShow(updatedName, updatedDescription, updatedIsWatched,
-                    updatedDateOfRelease, updatedRunningTime, updatedActors,
-                    0, 0, null);
+                    updatedDateOfRelease, updatedRunningTime, updatedActors, showToEdit.getNumOfEpisodesWatched(),
+                    showToEdit.getTotalNumOfEpisodes(), showToEdit.getTvSeasons());
             editedShow.setPoster(updatedPoster);
             return editedShow;
         }

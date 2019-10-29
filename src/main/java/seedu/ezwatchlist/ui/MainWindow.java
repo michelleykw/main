@@ -4,6 +4,7 @@ import java.util.logging.Logger;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextInputControl;
 import javafx.scene.input.KeyCombination;
@@ -17,6 +18,8 @@ import seedu.ezwatchlist.logic.Logic;
 import seedu.ezwatchlist.logic.commands.CommandResult;
 import seedu.ezwatchlist.logic.commands.exceptions.CommandException;
 import seedu.ezwatchlist.logic.parser.exceptions.ParseException;
+import seedu.ezwatchlist.model.Model;
+import seedu.ezwatchlist.statistics.Statistics;
 
 /**
  * The Main Window. Provides the basic application layout containing
@@ -24,12 +27,19 @@ import seedu.ezwatchlist.logic.parser.exceptions.ParseException;
  */
 public class MainWindow extends UiPart<Stage> {
 
+    private static final String MAIN_TAB = "watch-list";
+    private static final String WATCHED_TAB = "watched-list";
+    private static final String SEARCH_TAB = "search-list";
+    private static final String STATISTICS_TAB = "statistics tab";
+
     private static final String FXML = "MainWindow.fxml";
 
     private final Logger logger = LogsCenter.getLogger(getClass());
 
     private Stage primaryStage;
     private Logic logic;
+    private String currentTab;
+    private Statistics statistics;
 
     // Independent Ui parts residing in this Ui container
     private ShowListPanel showListPanel;
@@ -50,13 +60,29 @@ public class MainWindow extends UiPart<Stage> {
     @FXML
     private StackPane contentPanelPlaceholder;
 
-    public MainWindow(Stage primaryStage, Logic logic) {
+    @FXML
+    private Button watchlistButton;
+
+    @FXML
+    private Button watchedButton;
+
+    @FXML
+    private Button searchButton;
+
+    @FXML
+    private Button statisticsButton;
+
+    private Button currentButton;
+
+    public MainWindow(Stage primaryStage, Logic logic, Statistics statistics) {
         super(FXML, primaryStage);
 
         // Set dependencies
         this.primaryStage = primaryStage;
         this.logic = logic;
         this.primaryStage.setTitle("Ezwatchlist");
+        this.currentTab = MAIN_TAB;
+        this.statistics = statistics;
 
         // Configure the UI
         setWindowDefaultSize(logic.getGuiSettings());
@@ -109,9 +135,11 @@ public class MainWindow extends UiPart<Stage> {
      */
     void fillInnerParts() {
         showListPanel = new ShowListPanel(logic.getFilteredShowList());
+        showListPanel.setMainWindow(this);
         watchedPanel = new WatchedPanel(logic.getWatchedList());
+        watchedPanel.setMainWindow(this);
         searchPanel = new SearchPanel(logic.getSearchResultList());
-        statisticsPanel = new StatisticsPanel(/*logic.getWatchedList()*/);
+        statisticsPanel = new StatisticsPanel(statistics.getForgotten());
         contentPanelPlaceholder.getChildren().add(showListPanel.getRoot());
 
         resultDisplay = new ResultDisplay();
@@ -119,6 +147,11 @@ public class MainWindow extends UiPart<Stage> {
 
         CommandBox commandBox = new CommandBox(this::executeCommand);
         commandBoxPlaceholder.getChildren().add(commandBox.getRoot());
+
+        watchlistButton.getStyleClass().removeAll("button");
+        watchlistButton.getStyleClass().add("button-current");
+
+        currentButton = watchlistButton;
     }
 
     /**
@@ -161,8 +194,8 @@ public class MainWindow extends UiPart<Stage> {
         primaryStage.hide();
     }
 
-    public ShowListPanel getShowListPanel() {
-        return showListPanel;
+    public ResultDisplay getResultDisplay() {
+        return resultDisplay;
     }
 
     /**
@@ -170,16 +203,18 @@ public class MainWindow extends UiPart<Stage> {
      *
      * @see Logic#execute(String)
      */
-    private CommandResult executeCommand(String commandText)
+    public CommandResult executeCommand(String commandText)
             throws CommandException, ParseException, OnlineConnectionException {
         try {
+            if (currentTab.equals(WATCHED_TAB)) { // to ensure that the command executed is based off watched list index
+                logic.getModel().updateFilteredShowList(show -> show.isWatched().value);
+            }
             CommandResult commandResult = logic.execute(commandText);
             logger.info("Result: " + commandResult.getFeedbackToUser());
             resultDisplay.setFeedbackToUser(commandResult.getFeedbackToUser());
             //somehow use this code to display list of search results???
             //showListPanel = new ShowListPanel(logic.getSearchResultList());
             //contentPanelPlaceholder.getChildren().add(showListPanel.getRoot());
-
             if (commandResult.isShowHelp()) {
                 handleHelp();
             }
@@ -197,38 +232,65 @@ public class MainWindow extends UiPart<Stage> {
     }
 
     /**
-     * populate the contentPanel with watchlist content
+     * Populates the contentPanel with watchlist content
      */
     @FXML
     public void goToWatchlist() {
         contentPanelPlaceholder.getChildren().clear();
         contentPanelPlaceholder.getChildren().add(showListPanel.getRoot());
+        logic.getModel().updateFilteredShowList(Model.PREDICATE_SHOW_ALL_SHOWS);
+        currentTab = MAIN_TAB;
+        move(currentButton, watchlistButton);
+        currentButton = watchlistButton;
     }
 
     /**
-     * populate the contentPanel with watched list content
+     * Populates the contentPanel with watched list content
      */
     @FXML
     public void goToWatched() {
         contentPanelPlaceholder.getChildren().clear();
         contentPanelPlaceholder.getChildren().add(watchedPanel.getRoot());
+        logic.getModel().updateFilteredShowList(show -> show.isWatched().value);
+        currentTab = WATCHED_TAB;
+        move(currentButton, watchedButton);
+        currentButton = watchedButton;
     }
 
     /**
-     * populate the contentPanel with search content
+     * Populates the contentPanel with search content
      */
     @FXML
     public void goToSearch() {
         contentPanelPlaceholder.getChildren().clear();
         contentPanelPlaceholder.getChildren().add(searchPanel.getRoot());
+        currentTab = SEARCH_TAB;
+        move(currentButton, searchButton);
+        currentButton = searchButton;
     }
 
     /**
-     * populate the contentPanel with statistics content
+     * Populates the contentPanel with statistics content
      */
     @FXML
     public void goToStatistics() {
         contentPanelPlaceholder.getChildren().clear();
         contentPanelPlaceholder.getChildren().add(statisticsPanel.getRoot());
+        currentTab = STATISTICS_TAB;
+        move(currentButton, statisticsButton);
+        currentButton = statisticsButton;
     }
+
+    /**
+     * Changes the style of the button when changing panels.
+     * @param a the button representing the current panel
+     * @param b the button representing the button clicked
+     */
+    public void move(Button a, Button b) {
+        a.getStyleClass().removeAll("button-current");
+        a.getStyleClass().add("button");
+        b.getStyleClass().removeAll("button");
+        b.getStyleClass().add("button-current");
+    }
+
 }

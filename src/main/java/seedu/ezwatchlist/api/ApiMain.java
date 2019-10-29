@@ -7,6 +7,7 @@ import java.util.Set;
 
 import info.movito.themoviedbapi.*;
 import info.movito.themoviedbapi.model.Credits;
+import info.movito.themoviedbapi.model.Genre;
 import info.movito.themoviedbapi.model.MovieDb;
 import info.movito.themoviedbapi.model.core.MovieResultsPage;
 import info.movito.themoviedbapi.model.people.Person;
@@ -22,11 +23,13 @@ import seedu.ezwatchlist.model.actor.Actor;
 import seedu.ezwatchlist.model.show.Date;
 import seedu.ezwatchlist.model.show.Description;
 import seedu.ezwatchlist.model.show.Episode;
+import seedu.ezwatchlist.model.show.Genres;
 import seedu.ezwatchlist.model.show.IsWatched;
 import seedu.ezwatchlist.model.show.Movie;
 import seedu.ezwatchlist.model.show.Name;
 import seedu.ezwatchlist.model.show.Poster;
 import seedu.ezwatchlist.model.show.RunningTime;
+import seedu.ezwatchlist.model.show.Show;
 import seedu.ezwatchlist.model.show.TvShow;
 
 /**
@@ -139,6 +142,9 @@ public class ApiMain implements ApiInterface {
                 String imagePath = instance.retrieveImage(movieName);
                 toAdd.setPoster(new Poster(imagePath));
 
+                //genres
+                setGenres(movie.getGenres(), toAdd);
+
                 movies.add(toAdd);
             }
             return movies;
@@ -160,26 +166,29 @@ public class ApiMain implements ApiInterface {
 
         try {
             TvResultsPage page = apiCall.getSearch().searchTv(name, null, 1);
+            TmdbTV apiCallTvSeries = apiCall.getTvSeries();
 
             for (TvSeries tv : page.getResults()) {
                 final int tvId = tv.getId();
-                List<TvSeason> seasons = tv.getSeasons();
-                ArrayList<seedu.ezwatchlist.model.show.TvSeason> seasonsList = new ArrayList<>();
+                TvSeries series = apiCallTvSeries.getSeries(tvId, null);
                 TmdbTvSeasons tvSeasons = apiCall.getTvSeasons();
-                final int numberOfSeasons = tv.getNumberOfSeasons();
+                final int numberOfSeasons = series.getNumberOfSeasons();
+
+                //runtime
+                List<Integer> episodeRuntime = series.getEpisodeRuntime();
+                int runTime = episodeRuntime.isEmpty() ? 0 : getAverageRuntime(episodeRuntime);
+                ArrayList<seedu.ezwatchlist.model.show.TvSeason> seasonsList = new ArrayList<>();
 
                 //seasons
-                for (int seasonNo = 1; seasonNo < numberOfSeasons; seasonNo++) {
+                for (int seasonNo = 1; seasonNo <= numberOfSeasons; seasonNo++) {
                     TvSeason tvSeason = tvSeasons.getSeason(tvId, seasonNo,
                             null, TmdbTvSeasons.SeasonMethod.values());
-
                     List<TvEpisode> episodes = tvSeason.getEpisodes();
                     ArrayList<Episode> episodeList = new ArrayList<>();
 
                     for (TvEpisode episode : episodes) {
-
                         episodeList.add(new seedu.ezwatchlist.model.show.Episode(
-                                new Name(episode.getName()), episode.getEpisodeNumber()));
+                               episode.getName(), episode.getEpisodeNumber()));
                     }
 
                     seedu.ezwatchlist.model.show.TvSeason tvS =
@@ -188,20 +197,21 @@ public class ApiMain implements ApiInterface {
                     seasonsList.add(tvS);
                 }
 
-                Credits credits = apiCall.getTvSeries().getCredits(tvId, null);
-                Date date = new Date(apiCall.getTvSeries().getSeries(tvId, null,
-                        TmdbTV.TvMethod.external_ids).getFirstAirDate());
+                Credits credits = apiCallTvSeries.getCredits(tvId, null);
+                Date date = new Date(series.getFirstAirDate());
                 //actors
                 Set<Actor> actors = getActors(credits.getCast());
 
                 TvShow tvShowToAdd = new TvShow(new Name(tv.getName()), new Description(tv.getOverview()),
-                        new IsWatched(false), date, new RunningTime(20),
-                        actors, 0, tv.getNumberOfEpisodes(), seasonsList);
-
+                        new IsWatched(false), date, new RunningTime(runTime),
+                        actors, 0, getTotalNumOfEpisodes(seasonsList), seasonsList);
 
                 //image
                 ImageRetrieval instance = new ImageRetrieval(apiCall, tv.getPosterPath());
-                tvShowToAdd.setPoster(new Poster(instance.retrieveImage(tv.getName())));
+                //tvShowToAdd.setPoster(new Poster(instance.retrieveImage(tv.getName())));
+
+                //genres
+                setGenres(series.getGenres(), tvShowToAdd);
 
                 tvShows.add(tvShowToAdd);
             }
@@ -212,42 +222,24 @@ public class ApiMain implements ApiInterface {
         }
     }
 
-    /*public List<Movie> getMovieByActor(Actor actor) throws OnlineConnectionException {
-        ArrayList<Movie> movies = new ArrayList<>();
-        try {
-            TmdbPeople.PersonResultsPage page = apiCall.getSearch().searchPerson(actor.getActorName(), true, 1);
+    private void setGenres(List<Genre> genres, Show tvShowToAdd) {
+        ArrayList<String> genreList = new ArrayList<>();
+        genres.forEach(x -> genreList.add(x.getName()));
+        tvShowToAdd.setGenres(new Genres(genreList));
+    }
 
-            for (Person p : page.getResults()) {
-                String actorName = p.getName();
-                final int actorId = p.getCastId();
-                TmdbPeople apiPeople = apiCall.getPeople();
+    private int getAverageRuntime(List<Integer> episodesRuntime) {
+        int totalRuntime = 0;
+        int noOfEpisodes = episodesRuntime.size();
 
-                PersonCredits movie = apiPeople.getCombinedPersonCredits(actorId);
-                        //apiPeople(actorId, null, TmdbMovies.MovieMethod.credits);
-
-                RunningTime runtime = new RunningTime(movie.getRuntime());
-                String overview = m.getOverview();
-                String releaseDate = m.getReleaseDate();
-
-                //actors
-                Set<Actor> actors = getActors(movie.getCast());
-
-                Movie toAdd = new Movie(new Name(movieName), new Description(overview),
-                        new IsWatched(false), new Date(releaseDate), runtime , actors);
-
-                //retrieve image
-                ImageRetrieval instance = new ImageRetrieval(apiCall, m.getPosterPath());
-                String imagePath = instance.retrieveImage(movieName);
-                toAdd.setPoster(new Poster(imagePath));
-
-                movies.add(toAdd);
-            }
-            return movies;
-        } catch (MovieDbException e) {
-            notConnected();
-            return movies;
+        for (int i = 0; i < noOfEpisodes; i++) {
+            int individualRuntime = episodesRuntime.get(i);
+            totalRuntime += individualRuntime;
         }
-    }*/
+
+        int averageRunTime = Math.round(totalRuntime / noOfEpisodes);
+        return averageRunTime;
+    }
 
     private Set<Actor> getActors(List<PersonCast> cast) {
         Set<Actor> actors = new HashSet<>();
@@ -256,5 +248,13 @@ public class ApiMain implements ApiInterface {
             actors.add(actor);
         }
         return actors;
+    }
+
+    private int getTotalNumOfEpisodes(List<seedu.ezwatchlist.model.show.TvSeason> tvSeasons) {
+        int totalEpisodes = 0;
+        for (seedu.ezwatchlist.model.show.TvSeason season : tvSeasons) {
+            totalEpisodes += season.getEpisodes().size();
+        }
+        return totalEpisodes;
     }
 }

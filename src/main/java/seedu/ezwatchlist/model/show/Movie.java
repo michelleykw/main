@@ -1,5 +1,6 @@
 package seedu.ezwatchlist.model.show;
 
+import java.util.List;
 import java.util.Set;
 
 import seedu.ezwatchlist.model.actor.Actor;
@@ -15,4 +16,40 @@ public class Movie extends Show {
         super(name, description, isWatched, dateOfRelease, runningTime, actors);
         super.setType("Movie");
     }
+
+    @Override
+    public int getNumOfEpisodesWatched() {
+        return 0;
+    }
+
+    @Override
+    public int getTotalNumOfEpisodes() {
+        return 0;
+    }
+
+    @Override
+    public List<TvSeason> getTvSeasons() {
+        return null;
+    }
+
+    @Override
+    public int getLastWatchedSeasonNum() {
+        return 0;
+    }
+
+    @Override
+    public int getLastWatchedSeasonEpisode() {
+        return 0;
+    }
+
+    @Override
+    public int getNumOfSeasons() {
+        return 0;
+    }
+
+    @Override
+    public int getNumOfEpisodesOfSeason(int seasonNum) {
+        return 0;
+    }
+
 }

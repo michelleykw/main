@@ -2,6 +2,7 @@ package seedu.ezwatchlist.model.show;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -12,7 +13,7 @@ import seedu.ezwatchlist.model.actor.Actor;
  * Represents a Show in the watchlist.
  * Guarantees: details are present and not null, field values are validated, immutable.
  */
-public class Show {
+public abstract class Show {
 
     private String type;
 
@@ -26,6 +27,7 @@ public class Show {
     private final RunningTime runningTime;
     private final Set<Actor> actors = new HashSet<>();
     private Poster poster;
+    private Genres genres;
 
     public Show(Name name, Description description, IsWatched isWatched, Date dateOfRelease,
                 RunningTime runningTime, Set<Actor> actors) {
@@ -75,6 +77,19 @@ public class Show {
         return runningTime;
     }
 
+    public abstract int getNumOfEpisodesWatched();
+
+    public abstract int getTotalNumOfEpisodes();
+
+    public abstract List<TvSeason> getTvSeasons();
+
+    public abstract int getLastWatchedSeasonNum();
+
+    public abstract int getLastWatchedSeasonEpisode();
+
+    public abstract int getNumOfSeasons();
+
+    public abstract int getNumOfEpisodesOfSeason(int seasonNum);
 
     /**
      * Returns an immutable actor set, which throws {@code UnsupportedOperationException}
@@ -151,7 +166,7 @@ public class Show {
             return true;
         }
 
-        if (!(other instanceof TvShow || other instanceof Movie || other instanceof Show)) {
+        if (!(other instanceof Show)) {
             return false;
         }
 
@@ -184,5 +199,13 @@ public class Show {
                 .append(" Actors: ");
         getActors().forEach(builder::append);
         return builder.toString();
+    }
+
+    public Genres getGenres() {
+        return genres;
+    }
+
+    public void setGenres(Genres genres) {
+        this.genres = genres;
     }
 }

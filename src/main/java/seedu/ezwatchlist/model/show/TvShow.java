@@ -1,9 +1,8 @@
 package seedu.ezwatchlist.model.show;
 
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
-import javafx.scene.image.Image;
 import seedu.ezwatchlist.model.actor.Actor;
 
 /**
@@ -12,14 +11,13 @@ import seedu.ezwatchlist.model.actor.Actor;
  */
 public class TvShow extends Show {
 
-    private static final Image imageOfShow = null;
     private int numOfEpisodesWatched;
-    private ArrayList<TvSeason> tvSeasons;
+    private List<TvSeason> tvSeasons;
     private final int totalNumOfEpisodes;
 
     public TvShow(Name name, Description description, IsWatched isWatched,
                   Date dateOfRelease, RunningTime runningTime, Set<Actor> actors,
-                  int numOfEpisodesWatched, int totalNumOfEpisodes, ArrayList<TvSeason> tvSeasons) {
+                  int numOfEpisodesWatched, int totalNumOfEpisodes, List<TvSeason> tvSeasons) {
         super(name, description, isWatched, dateOfRelease, runningTime, actors);
         this.numOfEpisodesWatched = numOfEpisodesWatched;
         this.totalNumOfEpisodes = totalNumOfEpisodes;
@@ -27,16 +25,53 @@ public class TvShow extends Show {
         super.setType("Tv Show");
     }
 
+    @Override
     public int getNumOfEpisodesWatched() {
         return numOfEpisodesWatched;
     }
 
-    public ArrayList<TvSeason> getTvSeasons() {
+    @Override
+    public List<TvSeason> getTvSeasons() {
         return tvSeasons;
     }
 
+    @Override
     public int getTotalNumOfEpisodes() {
         return totalNumOfEpisodes;
     }
 
+    public int getLastWatchedSeasonNum() {
+        int seasonNum = 0;
+        int episodeNum = 0;
+        while (episodeNum < numOfEpisodesWatched) {
+            episodeNum += tvSeasons.get(seasonNum).getTotalNumOfEpisodes();
+            seasonNum++;
+        }
+        return seasonNum;
+    }
+
+    public int getLastWatchedSeasonEpisode() {
+        int cumulativeNumberOfEpisodes = 0;
+        int lastWatchedSeasonNum = getLastWatchedSeasonNum();
+        for (int seasonNum = 1; seasonNum < lastWatchedSeasonNum; seasonNum++) {
+            cumulativeNumberOfEpisodes += tvSeasons.get(seasonNum).getTotalNumOfEpisodes();
+        }
+        int episodeNum = numOfEpisodesWatched - cumulativeNumberOfEpisodes;
+
+        if (lastWatchedSeasonNum > 0 && episodeNum == 0) {
+            episodeNum = tvSeasons.get(lastWatchedSeasonNum).getTotalNumOfEpisodes();
+        }
+
+        return episodeNum;
+    }
+
+    @Override
+    public int getNumOfSeasons() {
+        return tvSeasons.size();
+    }
+
+    @Override
+    public int getNumOfEpisodesOfSeason(int seasonNum) {
+        return tvSeasons.get(seasonNum - 1).getTotalNumOfEpisodes();
+    }
 }
