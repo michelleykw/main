@@ -229,7 +229,6 @@ public class SearchCommand extends Command {
         }
     }
 
-    // TO EDIT
     /**
      * Add show from online if has actors, taking into account if user makes any other requests.
      * @param actorSet The set of actors to be searched.
@@ -239,16 +238,33 @@ public class SearchCommand extends Command {
     private void addShowFromOnlineIfHasActor(Set<Actor> actorSet) throws OnlineConnectionException, CommandException {
         if (!actorSet.isEmpty() && !requestedIsWatched()) { // would not check online if requested to be is watched
             if (requestedSearchForMovie()) {
-                //addOnlineMovieSearchedByNameToResult(showName);
+                addOnlineMovieSearchedByActorToResult(actorSet);
             } else if (requestedSearchForTv()) {
-                //addOnlineTvSearchedByNameToResult(showName);
+                addOnlineTvSearchedByActorToResult(actorSet);
             } else if (requestedType()) {
                 throw new CommandException(MESSAGE_INVALID_TYPE_COMMAND);
             } else {
-                //addOnlineMovieSearchedByNameToResult(showName);
-                //addOnlineTvSearchedByNameToResult(showName);
+                addOnlineMovieSearchedByActorToResult(actorSet);
+                addOnlineTvSearchedByActorToResult(actorSet);
             }
         }
+    }
+
+    private void addOnlineMovieSearchedByActorToResult(Set<Actor> actorSet) throws OnlineConnectionException {
+        /*List<Movie> movies = new ArrayList<>();
+        for (Actor actor : actorSet) {
+            movies = new ApiMain().getMovieByActor(actor);
+        }
+        for (Movie movie : movies) {
+            searchResult.add(movie);
+        }*/
+    }
+
+    private void addOnlineTvSearchedByActorToResult(Set<Actor> actorSet) throws OnlineConnectionException {
+        /*List<TvShow> tvShows = new ApiMain().getTvShowByName(showName);
+        for (TvShow tvShow : tvShows) {
+            searchResult.add(tvShow);
+        }*/
     }
 
     /**

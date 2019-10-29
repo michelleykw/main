@@ -109,7 +109,7 @@ Format: `help`
 Adds a show to the watchlist +
 Format: `add n/MOVIE_NAME [t/TAG]...`
 
-[TIP]
+[NOTE]
 A show can have any number of tags (including 0)
 
 Examples:
@@ -145,22 +145,28 @@ Clears all existing tags of the 2nd show in the list.
 ==== Search for a show by name: `search`
 
 Finds shows whose names contain any of the given keywords from the watchlist, watched list and online. +
-Format: `search n/KEYWORD [MORE_KEYWORDS]`
+Format: `search n/SHOW_NAME [a/ACTOR_NAME]... [w/IS_WATCHED] [i/IS_INTERNAL_WATCHLIST]` or `search a/ACTOR_NAME [n/SHOW_NAME]... [w/IS_WATCHED] [i/IS_INTERNAL]`
+
+[NOTE]
+`IS_WATCH` and `IS_INTERNAL_WATCHLIST` can only take in `true`, `false`, `yes` or `no` as input.
+
+[NOTE]
+`n/SHOW_NAME` and `a/ACTOR_NAME` can be searched multiple times.
 
 ****
-* The search is case insensitive. e.g `hans` will match `Hans`
-* The order of the keywords does not matter. e.g. `Hans Bo` will match `Bo Hans`
-* Only the name is searched.
-* Only full words will be matched e.g. `Han` will not match `Hans`
-* Shows matching at least one keyword will be returned (i.e. `OR` search). e.g. `Hans Bo` will return `Hans Gruber`, `Bo Yang`
+* The search is case insensitive. e.g `joker` will match `Joker`
+* The order of the keywords matter. e.g. `John angry` will not match `angry John`
+* Only the name of the show and the actors are searched.
+* Partial words will not be matched e.g. `Avenge` will not match `Avengers`
+* Shows has to match all keywords to be returned e.g. `Dark Knight` will not return `Dark Star`
 ****
 
 Examples:
 
-* `search n/Angry` +
-Returns `The Angry Birds Movie 2`
-* `search n/John Angry` +
-Returns any actor having names `John` or `Angry`
+* `search n/Angry w/yes` +
+Returns `The Angry Birds Movie 2` and any other show in the watchlist with the name `Angry`
+* `search a/Andrew Garfield i/no` +
+Returns any shows from online with actor named `Andrew Garfield` in them.
 
 // tag::delete[]
 ==== Deleting a show : `delete`

@@ -5,15 +5,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import info.movito.themoviedbapi.TmdbApi;
-import info.movito.themoviedbapi.TmdbMovies;
-import info.movito.themoviedbapi.TmdbTV;
-import info.movito.themoviedbapi.TmdbTvSeasons;
-import info.movito.themoviedbapi.TvResultsPage;
+import info.movito.themoviedbapi.*;
 import info.movito.themoviedbapi.model.Credits;
 import info.movito.themoviedbapi.model.MovieDb;
 import info.movito.themoviedbapi.model.core.MovieResultsPage;
+import info.movito.themoviedbapi.model.people.Person;
 import info.movito.themoviedbapi.model.people.PersonCast;
+import info.movito.themoviedbapi.model.people.PersonCredits;
 import info.movito.themoviedbapi.model.tv.TvEpisode;
 import info.movito.themoviedbapi.model.tv.TvSeason;
 import info.movito.themoviedbapi.model.tv.TvSeries;
@@ -117,7 +115,6 @@ public class ApiMain implements ApiInterface {
     public List<Movie> getMovieByName(String name) throws OnlineConnectionException {
         ArrayList<Movie> movies = new ArrayList<>();
         try {
-
             MovieResultsPage page = apiCall.getSearch().searchMovie(name,
                     null, null, true, 1);
 
@@ -214,6 +211,43 @@ public class ApiMain implements ApiInterface {
             return tvShows;
         }
     }
+
+    /*public List<Movie> getMovieByActor(Actor actor) throws OnlineConnectionException {
+        ArrayList<Movie> movies = new ArrayList<>();
+        try {
+            TmdbPeople.PersonResultsPage page = apiCall.getSearch().searchPerson(actor.getActorName(), true, 1);
+
+            for (Person p : page.getResults()) {
+                String actorName = p.getName();
+                final int actorId = p.getCastId();
+                TmdbPeople apiPeople = apiCall.getPeople();
+
+                PersonCredits movie = apiPeople.getCombinedPersonCredits(actorId);
+                        //apiPeople(actorId, null, TmdbMovies.MovieMethod.credits);
+
+                RunningTime runtime = new RunningTime(movie.getRuntime());
+                String overview = m.getOverview();
+                String releaseDate = m.getReleaseDate();
+
+                //actors
+                Set<Actor> actors = getActors(movie.getCast());
+
+                Movie toAdd = new Movie(new Name(movieName), new Description(overview),
+                        new IsWatched(false), new Date(releaseDate), runtime , actors);
+
+                //retrieve image
+                ImageRetrieval instance = new ImageRetrieval(apiCall, m.getPosterPath());
+                String imagePath = instance.retrieveImage(movieName);
+                toAdd.setPoster(new Poster(imagePath));
+
+                movies.add(toAdd);
+            }
+            return movies;
+        } catch (MovieDbException e) {
+            notConnected();
+            return movies;
+        }
+    }*/
 
     private Set<Actor> getActors(List<PersonCast> cast) {
         Set<Actor> actors = new HashSet<>();
