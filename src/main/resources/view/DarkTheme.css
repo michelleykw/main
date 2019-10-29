@@ -11,10 +11,11 @@
 }
 
 .label-bright {
-    -fx-font-size: 11pt;
+    -fx-font-size: 14pt;
     -fx-font-family: "Segoe UI Semibold";
-    -fx-text-fill: white;
+    -fx-text-fill: #eeeeee;
     -fx-opacity: 1;
+    -fx-font-style: italic;
 }
 
 .label-header {
@@ -358,4 +359,22 @@ h-box {
 .check-box > .box {
     /* background color of unselected checkbox */
     -fx-background-color: white;
+}
+
+.genre-tag .label {
+    -fx-text-fill: white;
+    -fx-background-color: #bc0d3e;
+    -fx-padding: 1 4 1 4;
+    -fx-border-radius: 2;
+    -fx-background-radius: 2;
+    -fx-font-size: 11;
+}
+
+.favourite-genre-tag .label {
+    -fx-text-fill: white;
+    -fx-background-color: #bc0d3e;
+    -fx-padding: 1 4 3 4;
+    -fx-border-radius: 2;
+    -fx-background-radius: 2;
+    -fx-font-size: 14;
 }

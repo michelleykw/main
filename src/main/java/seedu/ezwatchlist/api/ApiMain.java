@@ -21,6 +21,7 @@ import info.movito.themoviedbapi.model.tv.TvSeries;
 import info.movito.themoviedbapi.tools.MovieDbException;
 import seedu.ezwatchlist.api.exceptions.OnlineConnectionException;
 import seedu.ezwatchlist.api.model.ApiInterface;
+import seedu.ezwatchlist.api.model.ImageRetrieval;
 import seedu.ezwatchlist.model.actor.Actor;
 import seedu.ezwatchlist.model.show.Date;
 import seedu.ezwatchlist.model.show.Description;
@@ -243,18 +244,6 @@ public class ApiMain implements ApiInterface {
 
         int averageRunTime = Math.round(totalRuntime / noOfEpisodes);
         return averageRunTime;
-    }
-
-    public List<Movie> getMovieByActor(Actor actor) throws OnlineConnectionException {
-        ArrayList<Movie> movies = new ArrayList<>();
-        String actorName = actor.getActorName();
-        try {
-            TmdbMovies apiCallMovies = apiCall.getMovies();
-            // apiCallMovies.getCredits() //get cast
-            return movies;
-        } catch (MovieDbException e) {
-            return movies;
-        }
     }
 
     private Set<Actor> getActors(List<PersonCast> cast) {
